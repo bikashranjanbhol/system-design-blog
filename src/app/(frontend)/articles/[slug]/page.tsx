@@ -83,7 +83,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               {author?.name && <span aria-hidden="true" className="avatar">{initials(author.name)}</span>}
               <span className="byline__text">
                 {author?.name && <span className="byline__name">{author.name}</span>}
-                <span className="byline__date">{published}{updated && updated !== published ? ` · Updated ${updated}` : ''}</span>
+                <span className="byline__date">{published ? `${published}${updated && updated !== published ? ` · Updated ${updated}` : ''}` : `Updated ${updated}`}</span>
               </span>
             </div>
             <div className="byline__actions">

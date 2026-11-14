@@ -92,6 +92,15 @@ export const Articles: CollectionConfig = {
     delete: isAdmin,
   },
   defaultSort: '-publishedAt',
+  hooks: {
+    beforeChange: [
+      // The first time an article is published, stamp the publish date if none was set.
+      ({ data }) => {
+        if (data?.status === 'published' && !data.publishedAt) data.publishedAt = new Date().toISOString()
+        return data
+      },
+    ],
+  },
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, index: true },

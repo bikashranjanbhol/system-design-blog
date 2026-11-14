@@ -58,6 +58,25 @@ Optional, and alongside email and password. It turns on when `GOOGLE_CLIENT_ID` 
   `NEXT_PUBLIC_SITE_URL` so the site always sends that exact address.
 - Only the name and email address are requested from Google.
 
+## Connector for AI assistants
+
+The site exposes a connector at `<site address>/mcp` so that Claude, ChatGPT and other assistants that speak MCP can
+work with the blog from a normal chat. No API keys are involved: when the connector is added, the assistant opens the
+site, an admin signs in and approves the connection.
+
+- **What an assistant can do:** list topics, learning paths and articles; read an article; create a new article as a
+  draft from Markdown; edit an article that is still a draft.
+- **What it cannot do:** publish, unpublish or delete, or change published articles. Publishing stays in `/admin`.
+- **Who can connect:** only people who can sign in to `/admin`. The assistant acts as that admin, and drafts it creates
+  are attributed to them.
+- **Adding it:** in the assistant's connector settings, add a custom connector (custom MCP server) with the address
+  `<site address>/mcp`.
+- **Disconnecting:** remove the connector in the assistant's settings. Access also ends if the admin account is
+  deleted. Access tokens last one hour and renew for up to 30 days; changing `PAYLOAD_SECRET` ends every connection
+  (and every sign-in) at once.
+- **Code:** `src/app/mcp/route.ts` (tools), `src/lib/oauth.ts` and `src/app/oauth/` (sign-in), `src/lib/markdown.ts`
+  (Markdown to article blocks).
+
 ## Not built yet
 
 - Password reset ("Forgot password?" is a placeholder link). It needs an email service configured in Payload.
