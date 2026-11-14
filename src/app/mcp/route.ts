@@ -1,6 +1,7 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler'
 import { z } from 'zod'
 import { getClient } from '@/lib/data'
+import { ImageError, readImage } from '@/lib/images'
 import { blocksToMarkdown, markdownToBlocks } from '@/lib/markdown'
 import { SCOPE, siteOrigin, verify } from '@/lib/oauth'
 import type { Where } from 'payload'
@@ -135,7 +136,7 @@ const handler = createMcpHandler(
         description:
           'Use this to save a new article to the blog as a DRAFT. It is not visible to readers until a person publishes it in the editing panel. ' +
           'Write the body in Markdown: ## headings, paragraphs, **bold**, `inline code`, lists, fenced code blocks, tables, and "> **Key takeaway:** ..." for a callout. ' +
-          'Do not repeat the title as a heading. Images are not supported.',
+          'Do not repeat the title as a heading. To include an image, save the draft first and then call add_image_to_draft.',
         inputSchema: z.object({
           title: z.string().min(3).max(160),
           summary: z.string().min(10).max(300).describe('One or two sentences shown under the title and on cards.'),
@@ -189,7 +190,9 @@ const handler = createMcpHandler(
         title: 'Update a draft article',
         description:
           'Use this to change an article that is still a draft. Published articles cannot be changed with this tool. ' +
-          'Only the fields you pass are changed; passing markdown replaces the whole body.',
+          'Only the fields you pass are changed; passing markdown replaces the whole body. ' +
+          'Images already in the article appear in get_article as lines like ![caption](media:12): keep such a line to keep the image, move it to move the image, or leave it out to remove the image. ' +
+          'To add a new image, call add_image_to_draft.',
         inputSchema: z.object({
           slug: z.string().describe('Slug of the draft to change.'),
           title: z.string().min(3).max(160).optional(),
@@ -225,6 +228,83 @@ const handler = createMcpHandler(
           },
         })
         return text({ saved: 'draft', title: doc.title, slug: doc.slug, previewUrl: `${siteOrigin()}/articles/${doc.slug}`, editUrl: `${siteOrigin()}/admin/collections/articles/${doc.id}` })
+      },
+    )
+
+    server.registerTool(
+      'add_image_to_draft',
+      {
+        title: 'Add an image to a draft article',
+        description:
+          'Use this to put an image or diagram into the body of an article that is still a draft. The image is stored on the blog and shown at the chosen place. ' +
+          'Pass exactly one of: svg (preferred for diagrams: complete <svg>...</svg> markup using only shapes and text with inline attributes, no scripts, styles, external links or embedded images), ' +
+          'imageUrl (a public https address of a PNG, JPEG, WebP, GIF or SVG that needs no sign-in), or imageBase64 (base64 data of such a file, up to 4 MB). ' +
+          'For SVG, set a viewBox and use a white or transparent background; the page shows it up to about 720 px wide. ' +
+          'By default the image is added at the end; use afterHeading to place it under a section, or replaceImage to swap an existing image.',
+        inputSchema: z.object({
+          slug: z.string().describe('Slug of the draft.'),
+          alt: z.string().min(5).max(300).describe('Describes the image for people who cannot see it.'),
+          caption: z.string().max(200).optional().describe('Short caption shown under the image.'),
+          svg: z.string().optional().describe('Complete SVG markup.'),
+          imageUrl: z.string().optional().describe('Public https address of the image.'),
+          imageBase64: z.string().optional().describe('Base64-encoded image file.'),
+          placement: z.enum(['top', 'bottom']).default('bottom').describe('Used when afterHeading and replaceImage are not given.'),
+          afterHeading: z.string().optional().describe('Exact text of a section heading; the image goes at the end of that section.'),
+          replaceImage: z.number().int().min(1).optional().describe('Replace the Nth image already in the article (1 is the first).'),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      },
+      async (input) => {
+        const payload = await getClient()
+        const res = await payload.find({ collection: 'articles', where: { slug: { equals: input.slug } }, limit: 1, depth: 0 })
+        const a = res.docs[0] as Article | undefined
+        if (!a) return failure(`No article has the slug "${input.slug}".`)
+        if (a.status !== 'draft') return failure('That article is published. Published articles can only be changed in the editing panel.')
+
+        const body = [...(a.body || [])]
+        let at = input.placement === 'top' ? 0 : body.length
+        let replace = false
+        if (input.replaceImage) {
+          const figures = body.map((b, i) => (b.blockType === 'figure' ? i : -1)).filter((i) => i >= 0)
+          if (input.replaceImage > figures.length) return failure(`The article has ${figures.length} image(s), so there is no image number ${input.replaceImage}.`)
+          at = figures[input.replaceImage - 1]!
+          replace = true
+        } else if (input.afterHeading) {
+          const want = input.afterHeading.trim().toLowerCase()
+          const start = body.findIndex((b) => b.blockType === 'heading' && b.text.trim().toLowerCase() === want)
+          if (start < 0) {
+            const headings = body.flatMap((b) => (b.blockType === 'heading' ? [b.text] : []))
+            return failure(`No section is headed "${input.afterHeading}". The headings are: ${headings.join('; ') || '(none)'}.`)
+          }
+          const nextHeading = body.findIndex((b, i) => i > start && b.blockType === 'heading')
+          at = nextHeading < 0 ? body.length : nextHeading
+        }
+
+        let file
+        try {
+          file = await readImage(input)
+        } catch (e) {
+          if (e instanceof ImageError) return failure(e.message)
+          return failure('The image could not be fetched or read.')
+        }
+        const media = await payload.create({
+          collection: 'media',
+          data: { alt: input.alt },
+          file: { data: file.data, mimetype: file.mimetype, name: `${a.slug}-${Date.now().toString(36)}.${file.ext}`, size: file.data.length },
+        })
+
+        const block = { blockType: 'figure' as const, image: media.id, ...(input.caption ? { caption: input.caption } : {}) }
+        body.splice(at, replace ? 1 : 0, block)
+        await payload.update({ collection: 'articles', id: a.id, data: { body } })
+        return text({
+          saved: 'draft',
+          note: replace ? 'The image was replaced.' : 'The image was added.',
+          imageUrl: media.url?.startsWith('/') ? `${siteOrigin()}${media.url}` : media.url,
+          markdownReference: `![${input.caption || ''}](media:${media.id})`,
+          slug: a.slug,
+          previewUrl: `${siteOrigin()}/articles/${a.slug}`,
+          editUrl: `${siteOrigin()}/admin/collections/articles/${a.id}`,
+        })
       },
     )
   },

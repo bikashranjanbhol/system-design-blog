@@ -62,7 +62,7 @@ const isLoopback = (s: string) => {
 export const validRedirectUri = (s: string) => isHttpsUrl(s) || isLoopback(s)
 
 /** Private and internal hosts are refused when fetching a client's metadata document. */
-const publicHost = (host: string) =>
+export const publicHost = (host: string) =>
   !/^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[|0\.)/.test(host) && host.includes('.')
 
 /**

@@ -66,6 +66,10 @@ site, an admin signs in and approves the connection.
 
 - **What an assistant can do:** list topics, learning paths and articles; read an article; create a new article as a
   draft from Markdown; edit an article that is still a draft.
+- **Images:** an assistant can add an image to a draft, place it under a section, or replace an existing one. It can
+  send SVG markup (best for diagrams), a public https image address, or the image data itself (PNG, JPEG, WebP or GIF,
+  up to 4 MB). SVG containing scripts, styles, embedded images or outside links is refused. Images are stored in Media;
+  a replaced image stays in Media until someone deletes it there.
 - **What it cannot do:** publish, unpublish or delete, or change published articles. Publishing stays in `/admin`.
 - **Previewing drafts:** a draft opens at `/articles/<slug>` for anyone signed in to `/admin`, with a yellow "Draft
   preview" bar. Everyone else gets a not-found page. The editing screen has a Preview button, and the connector returns

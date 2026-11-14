@@ -85,6 +85,15 @@ export function markdownToBlocks(md: string, title?: string): Blocks {
       continue
     }
 
+    // An image already stored on the blog, written as ![caption](media:ID).
+    const img = /^!\[(.*?)\]\(media:(\d+)\)\s*$/.exec(line.trim())
+    if (img) {
+      i++
+      flush()
+      blocks.push({ blockType: 'figure', image: Number(img[2]), ...(img[1] ? { caption: img[1] } : {}) })
+      continue
+    }
+
     const h = /^(#{1,6})\s+(.*)$/.exec(line)
     if (h) {
       i++
@@ -175,7 +184,11 @@ export function blocksToMarkdown(blocks: Blocks | null | undefined): string {
           } else out.push(inlineToMd(n.children as Node[]))
         }
         break
-      case 'figure': out.push(`[image: ${b.caption || 'figure'}]`); break
+      case 'figure': {
+        const id = b.image && typeof b.image === 'object' ? b.image.id : b.image
+        out.push(`![${(b.caption || '').replace(/[\[\]\n]/g, ' ')}](media:${id})`)
+        break
+      }
       case 'lineDiagram': out.push(`[diagram: ${b.caption || b.alt}]`); break
     }
   }

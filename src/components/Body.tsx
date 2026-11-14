@@ -46,7 +46,16 @@ export function Body({ blocks }: { blocks: Blocks }) {
             const img = b.image as Media
             return (
               <figure key={key} className="figure">
-                {img?.url && <img src={img.url} alt={img.alt} width={img.width || undefined} height={img.height || undefined} />}
+                {img?.url && (
+                  <img
+                    src={img.url}
+                    alt={img.alt}
+                    width={img.width || undefined}
+                    height={img.height || undefined}
+                    // SVG diagrams have no fixed size, so they fill the column.
+                    style={img.mimeType === 'image/svg+xml' ? { width: '100%' } : undefined}
+                  />
+                )}
                 {b.caption && <figcaption>{b.caption}</figcaption>}
               </figure>
             )
