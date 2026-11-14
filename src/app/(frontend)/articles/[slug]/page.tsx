@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Article, User } from '@/payload-types'
-import { formatDate, getClient, getLearner, getProgress, initials, levelLabel, slugify, topicName } from '@/lib/data'
+import { formatDate, getClient, getLearner, getProgress, initials, isTeamMember, levelLabel, slugify, topicName } from '@/lib/data'
 import { Footer, Header } from '@/components/Chrome'
 import { Body } from '@/components/Body'
 import { Cover } from '@/components/Cover'
@@ -15,16 +15,23 @@ async function load(slug: string) {
   const payload = await getClient()
   const res = await payload.find({
     collection: 'articles',
-    where: { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
+    where: { slug: { equals: slug } },
     limit: 1,
     depth: 1,
   })
-  return res.docs[0] as Article | undefined
+  const article = res.docs[0] as Article | undefined
+  if (!article) return undefined
+  // Drafts are shown only to team members signed in to /admin, as a preview.
+  if (article.status !== 'published' && !(await isTeamMember())) return undefined
+  return article
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const a = await load((await params).slug)
-  return a ? { title: a.title, description: a.dek } : {}
+  if (!a) return {}
+  return a.status === 'published'
+    ? { title: a.title, description: a.dek }
+    : { title: `Draft preview: ${a.title}`, robots: { index: false, follow: false } }
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -51,6 +58,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const hasQuiz = (article.quiz || []).length > 0
   const saved = progress.saved.has(article.id)
   const here = `/articles/${article.slug}`
+  const isDraft = article.status !== 'published'
   const published = formatDate(article.publishedAt)
   const updated = formatDate(article.updatedAt)
 
@@ -58,6 +66,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <div className="page page--article">
       <Header learner={learner} active="articles" />
       <ScrollProgress />
+      {isDraft && (
+        <div className="draft-bar" role="status">
+          <div className="wrap draft-bar__in">
+            <span><strong>Draft preview.</strong> Only signed-in team members can see this page. Readers cannot.</span>
+            <a href={`/admin/collections/articles/${article.id}`}>Edit or publish</a>
+          </div>
+        </div>
+      )}
       <main className="wrap article-main">
         <div className="article-head">
           <nav aria-label="Breadcrumb" className="crumbs">

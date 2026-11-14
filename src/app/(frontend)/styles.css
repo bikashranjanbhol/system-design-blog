@@ -309,6 +309,10 @@ button { font: inherit; }
 .doc-main ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
 .doc-main .updated { font-size: 14px; color: var(--muted); }
 
+.draft-bar { background: #FFF4D6; border-bottom: 1px solid #E5C76B; color: #4A3A05; font-size: 14px; }
+.draft-bar__in { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-top: 10px; padding-bottom: 10px; }
+.draft-bar a { color: #4A3A05; font-weight: 600; text-underline-offset: 3px; }
+
 .consent-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
 
 /* Phone */

@@ -12,6 +12,13 @@ export async function getLearner(): Promise<Learner | null> {
   return user && user.collection === 'learners' ? (user as Learner) : null
 }
 
+/** True when the visitor is signed in to /admin as a team member. */
+export async function isTeamMember(): Promise<boolean> {
+  const payload = await getClient()
+  const { user } = await payload.auth({ headers: await headers() })
+  return Boolean(user && user.collection === 'users')
+}
+
 export type ProgressSets = { read: Set<number>; saved: Set<number> }
 
 export async function getProgress(learner: Learner | null): Promise<ProgressSets> {

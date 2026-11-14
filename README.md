@@ -67,6 +67,9 @@ site, an admin signs in and approves the connection.
 - **What an assistant can do:** list topics, learning paths and articles; read an article; create a new article as a
   draft from Markdown; edit an article that is still a draft.
 - **What it cannot do:** publish, unpublish or delete, or change published articles. Publishing stays in `/admin`.
+- **Previewing drafts:** a draft opens at `/articles/<slug>` for anyone signed in to `/admin`, with a yellow "Draft
+  preview" bar. Everyone else gets a not-found page. The editing screen has a Preview button, and the connector returns
+  the preview link after saving a draft.
 - **Who can connect:** only people who can sign in to `/admin`. The assistant acts as that admin, and drafts it creates
   are attributed to them.
 - **Adding it:** in the assistant's connector settings, add a custom connector (custom MCP server) with the address

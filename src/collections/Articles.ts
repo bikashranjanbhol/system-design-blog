@@ -84,6 +84,8 @@ export const Articles: CollectionConfig = {
     useAsTitle: 'title',
     group: 'Content',
     defaultColumns: ['title', 'topic', 'level', 'status', 'publishedAt'],
+    // Adds a Preview button to the editing screen. Drafts open for signed-in team members only.
+    preview: (doc) => (doc?.slug ? `${process.env.NEXT_PUBLIC_SITE_URL || ''}/articles/${doc.slug}` : null),
   },
   access: {
     read: ({ req }) => (req.user?.collection === 'users' ? true : { status: { equals: 'published' } }),

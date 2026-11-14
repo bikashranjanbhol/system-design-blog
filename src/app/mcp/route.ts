@@ -178,7 +178,7 @@ const handler = createMcpHandler(
           note: 'Saved as a draft. It is not visible to readers until someone publishes it in the editing panel.',
           title: doc.title,
           slug: doc.slug,
-          editUrl: `${siteOrigin()}/admin/collections/articles/${doc.id}`,
+          previewUrl: `${siteOrigin()}/articles/${doc.slug}`, editUrl: `${siteOrigin()}/admin/collections/articles/${doc.id}`,
         })
       },
     )
@@ -224,7 +224,7 @@ const handler = createMcpHandler(
             ...(input.coverLabels ? { cover: cover(input.coverLabels) } : {}),
           },
         })
-        return text({ saved: 'draft', title: doc.title, slug: doc.slug, editUrl: `${siteOrigin()}/admin/collections/articles/${doc.id}` })
+        return text({ saved: 'draft', title: doc.title, slug: doc.slug, previewUrl: `${siteOrigin()}/articles/${doc.slug}`, editUrl: `${siteOrigin()}/admin/collections/articles/${doc.id}` })
       },
     )
   },
