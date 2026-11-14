@@ -49,14 +49,22 @@ async function run() {
     process.exit(0)
   }
 
-  const author = await payload.create({
-    collection: 'users',
-    data: { name: 'Author Name', email: 'admin@example.com', password: 'change-me-admin' },
-  })
-  const learner = await payload.create({
-    collection: 'learners',
-    data: { name: 'Demo Learner', email: 'learner@example.com', password: 'change-me-learner' },
-  })
+  // Demo accounts have known passwords, so they are only created for local development
+  // (or when SEED_DEMO_ACCOUNTS=true). In production, create the first admin at /admin.
+  const usingPostgres = /^postgres(ql)?:\/\//.test(process.env.DATABASE_URL || '')
+  const demoAccounts = process.env.SEED_DEMO_ACCOUNTS ? process.env.SEED_DEMO_ACCOUNTS === 'true' : !usingPostgres
+  const author = demoAccounts
+    ? await payload.create({
+        collection: 'users',
+        data: { name: 'Author Name', email: 'admin@example.com', password: 'change-me-admin' },
+      })
+    : null
+  const learner = demoAccounts
+    ? await payload.create({
+        collection: 'learners',
+        data: { name: 'Demo Learner', email: 'learner@example.com', password: 'change-me-learner' },
+      })
+    : null
 
   const topicRows = [
     ['Fundamentals', 'fundamentals', 'Requests, scaling and estimates', true, false, false],
@@ -104,7 +112,7 @@ async function run() {
         status: 'published',
         featured: a.featured ?? false,
         publishedAt,
-        author: author.id,
+        author: author?.id,
         topic: topics[a.topic],
         level: a.level,
         readMinutes: a.min,
@@ -401,14 +409,16 @@ async function run() {
   }
 
   // The demo learner has read the first three Foundations articles and the first two of Scaling data.
-  for (const s of ['request-path', 'scaling-up-or-out', 'load-balancers', 'replication-basics', 'shard-key']) {
-    await payload.create({
-      collection: 'progress',
-      data: { learner: learner.id, article: ids[s], read: true, saved: false } as never,
-    })
+  if (learner) {
+    for (const s of ['request-path', 'scaling-up-or-out', 'load-balancers', 'replication-basics', 'shard-key']) {
+      await payload.create({
+        collection: 'progress',
+        data: { learner: learner.id, article: ids[s], read: true, saved: false } as never,
+      })
+    }
   }
 
-  payload.logger.info('Seeded: 22 articles, 3 learning paths, 10 topics, 1 admin, 1 demo learner.')
+  payload.logger.info(`Seeded: 22 articles, 3 learning paths, 10 topics${demoAccounts ? ', 1 admin, 1 demo learner' : ''}.`)
   process.exit(0)
 }
 

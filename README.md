@@ -52,12 +52,25 @@ The seed creates two accounts. Change both passwords before the site goes anywhe
 - Quiz answers are not stored.
 - About, Privacy and Terms are placeholder links.
 
-## Before going live
+## Deploying to Vercel
 
-- **Database.** Local development uses a SQLite file, and Payload creates the tables automatically in development.
-  In production, tables are created by migrations: `npm run payload migrate:create`, then `npm run payload migrate`
-  as part of deployment. On a serverless host (for example Vercel) use a hosted database such as Postgres with
-  `@payloadcms/db-postgres` in `src/payload.config.ts`.
-- **Uploads.** Images uploaded in the editing panel are written to the local `media/` folder. On a host without a
-  persistent disk, add a storage adapter.
+The repo is set up for Git → Vercel. Each push to `main` runs `npm run build:vercel`, which applies database
+migrations, seeds the sample content if the database is empty, and builds the site.
+
+Vercel needs these environment variables:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Postgres connection string (set automatically when a Postgres database is added from Vercel's marketplace) |
+| `BLOB_READ_WRITE_TOKEN` | Set automatically when a Vercel Blob store is connected; used for uploaded images |
+| `PAYLOAD_SECRET` | A long random string |
+| `NEXT_PUBLIC_SITE_NAME` | Name shown in the header and footer |
+| `NEXT_PUBLIC_SITE_URL` | Public address of the site |
+
+- **Database.** With a `postgres://` address in `DATABASE_URL` the project uses Postgres; otherwise it uses a local
+  SQLite file. After changing anything in `src/collections/`, create a migration with
+  `DATABASE_URL=postgres://… npm run payload migrate:create` and commit the new files in `src/migrations/`.
+- **First admin.** Demo accounts are not created on Postgres. Open `/admin` on the live site and create the first
+  admin account straight away; until one exists, anyone who opens that page can create it.
+- **Uploads.** Images go to Vercel Blob when its token is present, and to the local `media/` folder otherwise.
 - **Sessions.** Learners and admins use the same sign-in cookie, so signing in as one in a browser signs out the other.
