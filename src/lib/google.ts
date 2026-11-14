@@ -1,6 +1,7 @@
 /** Google sign-in settings, read from environment variables. */
-export const googleClientId = () => process.env.GOOGLE_CLIENT_ID || ''
-export const googleClientSecret = () => process.env.GOOGLE_CLIENT_SECRET || ''
+// Values are trimmed because a stray space or line break from copy-and-paste makes Google reject them.
+export const googleClientId = () => (process.env.GOOGLE_CLIENT_ID || '').trim()
+export const googleClientSecret = () => (process.env.GOOGLE_CLIENT_SECRET || '').trim()
 export const googleEnabled = () => Boolean(googleClientId() && googleClientSecret())
 
 /** Comma-separated list of Google addresses allowed to sign in to /admin. Empty means nobody. */

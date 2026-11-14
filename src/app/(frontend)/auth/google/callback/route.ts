@@ -45,15 +45,26 @@ export async function GET(req: Request) {
         grant_type: 'authorization_code',
       }),
     })
-    if (!tokenRes.ok) return problem('google')
+    if (!tokenRes.ok) {
+      // Google's reply names the cause (for example invalid_client) and contains no secrets.
+      console.error('[google sign-in] token exchange failed', tokenRes.status, await tokenRes.text())
+      return problem('google')
+    }
     const { access_token } = (await tokenRes.json()) as { access_token?: string }
-    if (!access_token) return problem('google')
+    if (!access_token) {
+      console.error('[google sign-in] token reply had no access token')
+      return problem('google')
+    }
     const infoRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
       headers: { Authorization: `Bearer ${access_token}` },
     })
-    if (!infoRes.ok) return problem('google')
+    if (!infoRes.ok) {
+      console.error('[google sign-in] profile request failed', infoRes.status, await infoRes.text())
+      return problem('google')
+    }
     profile = (await infoRes.json()) as GoogleUser
-  } catch {
+  } catch (err) {
+    console.error('[google sign-in] request to Google failed', err)
     return problem('google')
   }
 
