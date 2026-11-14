@@ -86,14 +86,16 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
         <nav aria-label="Footer">
           {minimal ? (
             <>
-              <Link href="/#privacy">Privacy</Link>
-              <Link href="/#terms">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
             </>
           ) : (
             <>
               <Link href="/">Articles</Link>
               <Link href="/learning-paths">Learning paths</Link>
               <Link href="/#about">About</Link>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
               <Link href="/feed.xml">RSS</Link>
             </>
           )}

@@ -295,6 +295,18 @@ button { font: inherit; }
 .auth-card__alt a { font-weight: 600; }
 .form-error { padding: 12px 14px; border: 1px solid var(--ink); border-radius: 8px; background: var(--panel); font-size: 15px; }
 
+/* Sign-in: divider before the Google button */
+.or { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+/* Plain text pages: privacy, terms, sign-in problems */
+.doc-main { max-width: 800px; padding-top: 56px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 18px; }
+.doc-main h1 { font-family: var(--display); font-weight: 700; font-size: clamp(32px, 3.8vw, 50px); line-height: 1.08; letter-spacing: -0.02em; }
+.doc-main h2 { margin-top: 18px; font-family: var(--display); font-weight: 600; font-size: 24px; line-height: 1.25; }
+.doc-main p, .doc-main li { color: var(--body); font-size: 17px; }
+.doc-main ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.doc-main .updated { font-size: 14px; color: var(--muted); }
+
 /* Phone */
 @media (max-width: 640px) {
   .wrap { padding-left: 20px; padding-right: 20px; }

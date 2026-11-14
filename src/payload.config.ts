@@ -26,6 +26,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    components: { afterLogin: ['/components/AdminGoogleButton#AdminGoogleButton'] },
   },
   collections: [Articles, Paths, Topics, Media, Users, Learners, Progress],
   editor: lexicalEditor(),

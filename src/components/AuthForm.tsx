@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 import { createAccount, signIn, type FormState } from '@/app/(frontend)/actions'
 
-export function AuthForm({ mode, next }: { mode: 'sign-in' | 'create'; next: string }) {
+export function AuthForm({ mode, next, google = false }: { mode: 'sign-in' | 'create'; next: string; google?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(mode === 'sign-in' ? signIn : createAccount, undefined)
   const q = next ? `?next=${encodeURIComponent(next)}` : ''
   return (
@@ -38,6 +38,12 @@ export function AuthForm({ mode, next }: { mode: 'sign-in' | 'create'; next: str
       <button type="submit" className="btn btn--accent btn--xl" disabled={pending}>
         {pending ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
       </button>
+      {google && (
+        <>
+          <div className="or"><span>or</span></div>
+          <a href={`/auth/google?as=learner${next ? `&next=${encodeURIComponent(next)}` : ''}`} className="btn btn--outline btn--xl">Continue with Google</a>
+        </>
+      )}
       <p className="auth-card__alt">
         {mode === 'sign-in' ? (
           <>New here? <Link href={`/create-account${q}`}>Create a free account</Link></>

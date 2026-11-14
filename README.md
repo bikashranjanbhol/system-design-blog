@@ -45,12 +45,25 @@ The seed creates two accounts. Change both passwords before the site goes anywhe
 - **Drafts.** Only articles with status "Published" appear on the site.
 - **Site name** comes from `NEXT_PUBLIC_SITE_NAME`.
 
+## Google sign-in
+
+Optional, and alongside email and password. It turns on when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.
+
+- **Learners** get a "Continue with Google" button on the sign-in and create-account pages. The first use creates
+  their account. A learner who already has an account with the same email address lands in that account.
+- **Admins** get a "Sign in with Google" button on the `/admin` login screen, but only when `GOOGLE_ADMIN_EMAILS`
+  lists at least one address. Only listed addresses are let in; a listed address with no admin account yet gets one
+  on first sign-in.
+- **Redirect address** registered in Google Cloud must be `<site address>/auth/google/callback`. Set
+  `NEXT_PUBLIC_SITE_URL` so the site always sends that exact address.
+- Only the name and email address are requested from Google.
+
 ## Not built yet
 
 - Password reset ("Forgot password?" is a placeholder link). It needs an email service configured in Payload.
 - "Subscribe" in the header opens account creation; there is no newsletter.
 - Quiz answers are not stored.
-- About, Privacy and Terms are placeholder links.
+- About is a placeholder link. Privacy and Terms are template pages with bracketed parts to fill in.
 
 ## Deploying to Vercel
 

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getLearner } from '@/lib/data'
 import { Footer, Header } from '@/components/Chrome'
 import { AuthForm } from '@/components/AuthForm'
+import { googleEnabled } from '@/lib/google'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Create account' }
@@ -28,7 +29,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
           </ul>
           <p className="auth-pitch__note">Reading stays open to everyone. You only need an account to track progress.</p>
         </div>
-        <AuthForm mode="create" next={next} />
+        <AuthForm mode="create" next={next} google={googleEnabled()} />
       </main>
       <Footer minimal />
     </div>
