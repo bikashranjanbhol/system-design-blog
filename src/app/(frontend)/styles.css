@@ -77,7 +77,8 @@ button { font: inherit; }
 .site-footer nav a { display: flex; align-items: center; min-height: 44px; color: #e6ebf3; }
 
 /* Cover diagrams */
-.cover { height: 168px; border: 1px solid var(--line); border-radius: 10px; background-color: var(--panel); background-image: radial-gradient(#c3ccdb 1px, transparent 1px); background-size: 16px 16px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink); }
+.cover { height: 168px; border: 1px solid var(--line); border-radius: 10px; background-color: var(--panel); background-image: radial-gradient(#c3ccdb 1px, transparent 1px); background-size: 16px 16px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink); overflow: hidden; }
+.cover__row { display: flex; align-items: center; flex: none; transform-origin: center; }
 .cover__col-wrap { display: flex; align-items: center; }
 .cover__line { width: 26px; height: 1.5px; background: var(--ink); }
 .cover__box { padding: 8px 12px; background: #fff; border: 1.5px solid var(--ink); border-radius: 6px; white-space: nowrap; }
