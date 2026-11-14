@@ -6,7 +6,7 @@ import { Footer, Header } from '@/components/Chrome'
 import { Body } from '@/components/Body'
 import { Cover } from '@/components/Cover'
 import { Quiz } from '@/components/Quiz'
-import { ReadTracker, ScrollProgress, ShareButton } from '@/components/ClientBits'
+import { ReadTracker, ScrollProgress, ShareButton, TocSpy } from '@/components/ClientBits'
 import { toggleSave } from '../../actions'
 
 export const dynamic = 'force-dynamic'
@@ -149,6 +149,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   <a key={i} href={`#${slugify(h.text)}`} className={i === 0 ? 'is-current' : undefined}>{h.text}</a>
                 ))}
                 {hasQuiz && <a href="#quiz-h">Check your understanding</a>}
+                <TocSpy />
               </nav>
             )}
             {path && (

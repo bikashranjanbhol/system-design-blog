@@ -206,6 +206,11 @@ button { font: inherit; }
 .prev-next .prev-next__next span { color: #c9d3e3; }
 
 .article-aside { flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 28px; font-size: 15px; scroll-margin-top: 16px; }
+/* On wide screens the side column stays in view while the article scrolls; if it is taller than the window it scrolls on its own. */
+@media (min-width: 1000px) {
+  .article-aside { position: sticky; top: 24px; align-self: flex-start; max-height: calc(100vh - 48px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 6px; }
+}
+.article-body h2, #quiz-h { scroll-margin-top: 24px; }
 .toc { display: flex; flex-direction: column; gap: 4px; }
 .toc h2 { margin-bottom: 6px; font-weight: 500; letter-spacing: 0.08em; }
 .toc a { display: flex; align-items: center; min-height: 44px; padding-left: 14px; border-left: 2px solid var(--line); color: var(--body); text-decoration: none; }
